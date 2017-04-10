@@ -82,7 +82,7 @@
           mapService.commentsEnabled = resp.data.enabled;
           if (this.commentsEnabled) {
             this.vectorLayer = new ol.layer.Vector({source: this.vectorSource, metadata: {
-              title: 'Comments', uniqueID: 'comments'}});
+              title: 'Comments', uniqueID: 'comments', config: {}}});
             mapService.map.addLayer(this.vectorLayer);
             mapService.map.addInteraction(this.selectControl);
             this.refreshComments();
