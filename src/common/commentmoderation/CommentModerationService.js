@@ -78,11 +78,32 @@
           method: 'GET',
           url: '/maps/' + mapService.id + '/setComments'
         }).then(function(resp) {
+
+          var fill = new ol.style.Fill({
+            color: 'rgba(51, 153, 204,0.9)'
+          });
+          var stroke = new ol.style.Stroke({
+            color: '#1919FF',
+            width: 1.5
+          });
+          var style = [
+            new ol.style.Style({
+              image: new ol.style.Circle({
+                fill: fill,
+                stroke: stroke,
+                radius: 7
+              }),
+              fill: fill,
+              stroke: stroke
+            })
+          ];
           this.commentsEnabled = resp.data.enabled;
           mapService.commentsEnabled = resp.data.enabled;
           if (this.commentsEnabled) {
             this.vectorLayer = new ol.layer.Vector({source: this.vectorSource, metadata: {
-              title: 'Comments', uniqueID: 'comments', config: {}}});
+              title: 'Comments', uniqueID: 'comments', config: {}},
+                        style: style
+            });
             mapService.map.addLayer(this.vectorLayer);
             mapService.map.addInteraction(this.selectControl);
             this.refreshComments();
