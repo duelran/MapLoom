@@ -64,10 +64,8 @@
 
 
             scope.commentClicked = function(comment) {
-              if (comment.active === true) {
-                var bounds = comment.getGeometry().getExtent();
-                mapService.zoomToExtent(bounds, true);
-              }
+              var bounds = comment.getGeometry().getExtent();
+              mapService.zoomToExtent(bounds, true);
               if (commentModerationService.editCommentPermission) {
                 if (previousSelection) {
                   previousSelection.active = false;
