@@ -744,7 +744,7 @@
             title: fullConfig.Title
           };
           var attribution = new ol.Attribution({
-            html: 'Tiles &copy; <a href="' + server.url + '">ArcGIS</a>'
+            html: 'Source: Esri, DigitalGlobe, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community'
           });
           var serviceUrl = server.url + '/tile/{z}/{y}/{x}';
           var serviceSource = null;
@@ -1531,7 +1531,11 @@
       var map = new ol.Map({
         //layers: do not add any layers to the map as they will be added once server is created and getcapabilities
         //        equivalent functions respond if relevant.
-        controls: ol.control.defaults().extend([
+        controls: ol.control.defaults({
+          attributionOptions: {
+            collapsible: false
+          }
+        }).extend([
           //new ol.control.FullScreen(),
           new ol.control.ZoomSlider(),
           mousePositionControl_,
