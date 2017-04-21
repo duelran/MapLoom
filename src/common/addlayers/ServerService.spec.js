@@ -12,9 +12,6 @@ describe('addLayers/ServerService', function() {
     $httpBackend = _$httpBackend_;
   }));
 
-  afterEach(function() {
-  });
-
   describe('#reformatLayerConfigs', function() {
     describe('no layers', function() {
       it('returns an empty array', function() {
@@ -110,6 +107,7 @@ describe('addLayers/ServerService', function() {
     describe('result has one layer', function() {
       var layers = { 'd.docs': [] };
       beforeEach(function() {
+        configService.configuration.registryUrl = 'http://server.registry/registry/';
         layers['d.docs'] = [
           {
             type: 'Layer',
@@ -155,6 +153,44 @@ describe('addLayers/ServerService', function() {
           CRS: ['EPSG:4326']
         }));
       });
+      it('should add the registry path to a relative tile_url', function() {
+        var relative_url = '/layers/aaaaaaaa-bbbb-cccc-ddd/${x}/${y}/${z}.png';
+        layers['d.docs'][0].tile_url = relative_url;
+
+        expect(serverService.reformatLayerHyperConfigs(layers, '', 0)[0]).toEqual(jasmine.objectContaining({
+          detail_url: 'http://server.registry/registry' + relative_url
+        }));
+      });
+
+      it('should add the registry path to an absolute tile_url', function() {
+        var relative_url = '/layers/aaaaaaaa-bbbb-cccc-ddd/${x}/${y}/${z}.png';
+        var server_url = '//server.registry/registry';
+        layers['d.docs'][0].tile_url = 'http:' + server_url + relative_url;
+
+        expect(serverService.reformatLayerHyperConfigs(layers, '', 0)[0]).toEqual(jasmine.objectContaining({
+          detail_url: server_url + relative_url
+        }));
+      });
+
+      it('should add the registry path to a schemaless tile_url', function() {
+        var relative_url = '/layers/aaaaaaaa-bbbb-cccc-ddd/${x}/${y}/${z}.png';
+        var server_url = '//server.registry/registry';
+        layers['d.docs'][0].tile_url = server_url + relative_url;
+
+        expect(serverService.reformatLayerHyperConfigs(layers, '', 0)[0]).toEqual(jasmine.objectContaining({
+          detail_url: server_url + relative_url
+        }));
+      });
+
+      it('should handle a relative registry path with the tile_url', function() {
+        configService.configuration.registryUrl = '/registry/';
+        layers['d.docs'][0].tile_url = '/layers/aaaaaaaa-bbbb-cccc-ddd/${x}/${y}/${z}.png';
+
+        expect(serverService.reformatLayerHyperConfigs(layers, '', 0)[0]).toEqual(jasmine.objectContaining({
+          detail_url: '/registry/layers/aaaaaaaa-bbbb-cccc-ddd/${x}/${y}/${z}.png' 
+        }));
+      });
+
     });
   });
   describe('#populateLayersConfigElastic', function() {
@@ -175,9 +211,10 @@ describe('addLayers/ServerService', function() {
       });
       it('calls reformatLayerConfigs with a geoserver URL', function() {
         spyOn(serverService, 'reformatLayerConfigs');
-        serverService.populateLayersConfigElastic({}, null);
+        var geoserver_config = serverService.getServerByUrl('//server/geoserver/wms');
+        serverService.populateLayersConfigElastic(geoserver_config, {});
         $httpBackend.flush();
-        expect(serverService.reformatLayerConfigs).toHaveBeenCalledWith([], '/geoserver/wms');
+        expect(serverService.reformatLayerConfigs).toHaveBeenCalledWith([], geoserver_config.id);
       });
     });
     describe('search server is invalid', function() {
@@ -190,16 +227,16 @@ describe('addLayers/ServerService', function() {
   });
   describe('#applyESFilter', function() {
     describe('no filter', function() {
-      it('returns the url', function() {
+      it('returns an empty object', function() {
         var filterOptions = {
           owner: null,
           text: null,
-          docsPage: 0,
+          docsPage: null,
           size: null,
           mapPreviewCoordinatesBbox: null,
           histogramFlag: false
         };
-        expect(serverService.applyESFilter('mapstory', filterOptions)).toEqual('mapstory');
+        expect(serverService.applyESFilter(filterOptions)).toEqual({});
       });
     });
     describe('only text filter', function() {
@@ -210,7 +247,7 @@ describe('addLayers/ServerService', function() {
           docsPage: null,
           size: null
         };
-        expect(serverService.applyESFilter('mapstory', filterOptions)).toEqual('mapstory&q.text=Ocean');
+        expect(serverService.applyESFilter(filterOptions)).toEqual({'q.text' : 'Ocean'});
       });
     });
     describe('only owner filter', function() {
@@ -219,12 +256,12 @@ describe('addLayers/ServerService', function() {
       });
       it('returns the url with q', function() {
         var filterOptions = {
-          owner: true,
+          owner: 'Dijkstra',
           text: null,
           docsPage: null,
           size: null
         };
-        expect(serverService.applyESFilter('mapstory', filterOptions)).toEqual('mapstory&owner__username__in=Dijkstra');
+        expect(serverService.applyESFilter(filterOptions)).toEqual({'owner__username__in' : 'Dijkstra'});
       });
     });
     describe('pagination', function() {
@@ -235,7 +272,7 @@ describe('addLayers/ServerService', function() {
           docsPage: null,
           size: 10
         };
-        expect(serverService.applyESFilter('mapstory', filterOptions)).toEqual('mapstory&d.docs.limit=10');
+        expect(serverService.applyESFilter(filterOptions)).toEqual({'d.docs.limit' : 10});
       });
       it('pagination with docsPage', function() {
         var filterOptions = {
@@ -244,7 +281,7 @@ describe('addLayers/ServerService', function() {
           docsPage: 10,
           size: 10
         };
-        expect(serverService.applyESFilter('mapstory', filterOptions)).toEqual('mapstory&d.docs.limit=10&d.docs.page=10');
+        expect(serverService.applyESFilter(filterOptions)).toEqual({'d.docs.limit' : 10, 'd.docs.page' : 10});
       });
     });
   });
@@ -292,9 +329,11 @@ describe('addLayers/ServerService', function() {
       });
       it('calls reformatLayerConfigs with a geoserver URL', function() {
         spyOn(serverService, 'reformatConfigForFavorites');
-        serverService.addSearchResultsForFavorites({}, null);
+        var geoserver_config = serverService.getServerByUrl('//server/geoserver/wms');
+        serverService.addSearchResultsForFavorites(geoserver_config, {});
         $httpBackend.flush();
-        expect(serverService.reformatConfigForFavorites).toHaveBeenCalledWith([], '/geoserver/wms');
+        // The GeoServer server is usually configured in server id 1 or 2.
+        expect(serverService.reformatConfigForFavorites).toHaveBeenCalledWith([], geoserver_config.id);
       });
     });
     describe('search server is invalid', function() {

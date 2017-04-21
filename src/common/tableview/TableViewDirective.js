@@ -214,16 +214,12 @@
             };
 
             scope.goToMap = function() {
-              var projectedgeom = transformGeometry(scope.selectedRow.feature.geometry,
-                  tableViewService.selectedLayer.get('metadata').projection,
-                  mapService.map.getView().getProjection());
-
-              mapService.zoomToExtent(projectedgeom.getExtent());
+              var geom = transformGeometry(scope.selectedRow.feature.geometry, null, null);
+              mapService.zoomToExtent(geom.getExtent());
 
               var item = {layer: tableViewService.selectedLayer, features: [scope.selectedRow.feature]};
               $('#table-view-window').modal('hide');
               featureManagerService.show(item);
-
             };
 
             scope.showHeatmap = function() {
@@ -497,6 +493,24 @@
                   scope.isSaving = false;
                 });
               }
+            };
+
+            scope.downloadCSV = function() {
+              tableViewService.selectedLayer.get('metadata').isLoadingCSV = true;
+              tableViewService.getCSV().then(function(data) {
+                tableViewService.selectedLayer.get('metadata').isLoadingCSV = false;
+              }, function(reject) {
+                tableViewService.selectedLayer.get('metadata').isLoadingCSV = false;
+              });
+            };
+
+            scope.isLoadingCSV = function() {
+              if (!goog.isDefAndNotNull(tableViewService.selectedLayer)) {
+                return false;
+              }
+
+              var loading = tableViewService.selectedLayer.get('metadata').isLoadingCSV;
+              return goog.isDefAndNotNull(loading) && loading === true;
             };
           }
         };

@@ -227,6 +227,8 @@
     'mgrs': 'MGRS',
     'other': 'Other',
     'search': 'Search',
+    'searching': 'Searching...',
+    'search_prompt': 'Please use any of the settings on the left to start a search.',
     'search_locations': 'Search Locations',
     'search_table': 'Search All Fields',
     'search_results': 'Search Results',
@@ -359,6 +361,7 @@
     'measure_line' : 'Length',
     'measure_stop' : 'Stop measuring',
     'measure_units' : 'Units',
+    'bounding_box' : 'Bounding Box',
     'distance_bearing_calculator' : 'Distance Bearing Calculator',
     'departure' : 'Departure',
     'latitude' : 'Latitude',
@@ -373,7 +376,6 @@
     'clear_results' : 'Clear Results',
     'close' : 'Close',
     'breadcrumbs' : 'Breadcrumbs'
-
   };
 
   var module = angular.module('loom_translations_en', ['pascalprecht.translate']);

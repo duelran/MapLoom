@@ -5,14 +5,19 @@
   var service_ = null;
   var q_ = null;
 
+  var FileSaver_;
+  var Blob_;
+
   var searching = false;
   var searchText = '';
 
   module.provider('tableViewService', function() {
-    this.$get = function($q, $http) {
+    this.$get = function($q, $http, FileSaver, Blob) {
       http_ = $http;
       service_ = this;
       q_ = $q;
+      FileSaver_ = FileSaver;
+      Blob_ = Blob;
       return this;
     };
 
@@ -205,7 +210,8 @@
       }
     };
 
-    this.getFeaturesPostPayloadXML = function(layer, filters, bbox, resultsPerPage, currentPage, exclude_header) {
+    this.getFeaturesPostPayloadXML = function(layer, filters, bbox, resultsPerPage, currentPage, exclude_header, format) {
+      var outputFormat = format || 'JSON';
       var paginationParamsStr = '';
       if (goog.isDefAndNotNull(resultsPerPage) && goog.isDefAndNotNull(currentPage)) {
         paginationParamsStr = ' maxFeatures="' + resultsPerPage + '" startIndex="' +
@@ -273,7 +279,7 @@
       }
 
       xml += '<wfs:GetFeature service="WFS" version="' + settings.WFSVersion + '"' +
-          ' outputFormat="JSON"' +
+          ' outputFormat="' + outputFormat + '"' +
           paginationParamsStr +
           ' xmlns:wfs="http://www.opengis.net/wfs"' +
           ' xmlns:ogc="http://www.opengis.net/ogc"' +
@@ -281,7 +287,8 @@
           ' xsi:schemaLocation="http://www.opengis.net/wfs' +
           ' http://schemas.opengis.net/wfs/1.1.0/wfs.xsd">' +
           '<wfs:Query typeName="' + metadata.name + '"' +
-          ' srsName="' + metadata.projection + '"' +
+          ' srsName="' + 'EPSG:3857' + '"' +
+          //' srsName="' + metadata.projection + '"' +
           '>';
 
       var spatialFilter = '';
@@ -313,6 +320,10 @@
         xml += '<ogc:Filter>';
         xml += spatialFilter;
         xml += '</ogc:Filter>';
+      } else if (bboxStr) {
+        xml += '<ogc:Filter>';
+        xml += bboxStr;
+        xml += '</ogc:Filter>';
       }
 
       xml += '</wfs:Query>' + '</wfs:GetFeature>';
@@ -327,6 +338,7 @@
       var metadata = layer.get('metadata');
       var postURL = metadata.url + '/wfs/WfsDispatcher';
       var xmlData = service_.getFeaturesPostPayloadXML(layer, filters, bbox, resultsPerPage, currentPage);
+
       http_.post(postURL, xmlData, {
         headers: {
           'Content-Type': 'text/xml;charset=utf-8'
@@ -451,6 +463,52 @@
       searching = false;
       searchText = '';
       this.currentPage = 0;
+    };
+
+    this.getCSV_Safari = function() {
+      if (confirm('Safari does not support table filters. Proceeding will download all features.')) {
+        var metadata = this.selectedLayer.get('metadata');
+        var url = metadata.url + '/wfs/WfsDispatcher?';
+        var args = {
+          'typename' : metadata.name,
+          'version' : '1.0.0',
+          'service' : 'WFS',
+          'request' : 'GetFeature',
+          'outputFormat' : 'csv'
+        };
+
+        var params = [];
+        for (var key in args) {
+          params.push(key + '=' + encodeURIComponent(args[key]));
+        }
+
+        url += params.join('&');
+
+        window.open(url);
+      }
+    };
+
+    this.getCSV = function() {
+      if (navigator.userAgent.indexOf('Safari') != -1 && navigator.userAgent.indexOf('Chrome') == -1) {
+        this.getCSV_Safari();
+        // return a fulfilled promise
+        var deferred = q_.defer();
+        deferred.resolve();
+        return deferred.promise;
+      }
+
+      var metadata = this.selectedLayer.get('metadata');
+      var postURL = metadata.url + '/wfs/WfsDispatcher';
+      var layerName = metadata.name.replace(/:/g, '_');
+      var xmlData = service_.getFeaturesPostPayloadXML(this.selectedLayer, metadata.filters, null, null, null, false, 'CSV');
+      return http_.post(postURL, xmlData, {
+        headers: {
+          'Content-Type': 'text/xml;charset=utf-8'
+        }
+      }).then(function(data) {
+        var blob = new Blob_([data.data], { type: data.headers('Content-type') });
+        FileSaver_.saveAs(blob, layerName + '.csv');
+      });
     };
   });
 }());
