@@ -119,6 +119,7 @@
         searchEnabled: true,
         nominatimSearchEnabled: false,
         geoquerySearchEnabled: false,
+        eraSearchEnabled: true,
         serverLocation: serverLocation,
         searchApiURL: serverLocation + '/registry/api/catalogs/',
         auto_refresh: true,
