@@ -44,7 +44,9 @@
       return this;
     };
 
-    if (configService_.configuration.eraSearchEnabled === true) {
+    // Keeping it here so it's easier to merge master into the ps/era branch in the future
+    var era_search_enabled = true
+    if (era_search_enabled === true) {
       this.performSearch = function(searchTerm) {
         //Given a layerName and the propertyName, generates the url string to make the wfs feature search for the searchTerm
         function generateURL(layerName, propertyName) {
