@@ -201,8 +201,25 @@
       //this.configuration = configService_.configuration;
       this.title = configService_.configuration.about.title;
       this.abstract = configService_.configuration.about.abstract;
+      var storyReady = $q.defer();
+      this.story = {
+        footer: undefined,
+        selectedFeature: undefined,
+        icon: undefined,
+        ready: storyReady.promise
+      };
       this.id = configService_.configuration.id;
       this.save_method = 'POST';
+
+      if (this.id) {
+        httpService_.get('/story?map_id=' + this.id).success(function(resp) {
+          service_.story.footer = resp.footer;
+          service_.story.selectedFeature = resp['selected_feature'];
+          service_.story.icon = resp.icon;
+          storyReady.resolve(true);
+          return resp;
+        });
+      }
 
       if (goog.isDefAndNotNull(this.id) && this.id) {
         this.save_url = '/maps/' + this.id + '/data';
@@ -1021,6 +1038,11 @@
       return translate_.instant('new_map');
     };
 
+    this.getAbstract = function() {
+      return this.abstract;
+    };
+
+
     this.getCenter = function() {
       return this.map.getView().getCenter();
     };
@@ -1079,6 +1101,8 @@
     };
 
     this.save = function(copy) {
+      //TODO: this should be handled in a directive
+      service_.story.footer = $('#footer').text().trim();
 
       if (goog.isDefAndNotNull(copy) && copy) {
         // remove current map id so that it is saved as a new map.
@@ -1153,6 +1177,36 @@
         }
       }).success(function(data, status, headers, config) {
         service_.updateMap(data);
+        var file = $('#logo-upload')[0].files[0];
+
+        function post() {
+          var params = {
+            'map_id': data.id,
+            'footer': service_.story.footer,
+            'selected_feature': service_.story.selectedFeature
+          };
+          if (reader) {
+            params.icon = reader.result.slice(reader.result.indexOf(',') + 1);
+          }
+          httpService_({
+            url: '/story',
+            method: 'POST',
+            data: $.param(params),
+            headers: {
+              'X-CSRFToken': configService_.csrfToken,
+              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            }
+          });
+        }
+
+        if (file) {
+          var reader = new FileReader();
+          reader.readAsDataURL(file);
+          reader.onload = post;
+        } else {
+          post();
+        }
+
       }).error(function(data, status, headers, config) {
         if (status == 403 || status == 401) {
           dialogService_.error(translate_.instant('save_failed'), translate_.instant('map_save_permission'));
