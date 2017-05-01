@@ -920,6 +920,14 @@
             }, function() {
               testReadOnly();
             });
+
+            var layerName = layer.getSource().getParams()['LAYERS'] || layer.getSource().getParams()['layers'];
+
+            // Fetch the Exchange layer metadata
+            httpService_.get('/layers/' + layerName + '/get').success(function(response) {
+              response.attributes = _.sortBy(response.attributes, 'display_order');
+              layer.set('exchangeMetadata', response);
+            });
           }
         } else if (server.ptype === 'gxp_tmssource') {
           nameSplit = fullConfig.Name.split(':');
