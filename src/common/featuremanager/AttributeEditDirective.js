@@ -45,6 +45,14 @@
                 }
               }
 
+              var selectedLayer = featureManagerService.getSelectedLayer();
+              if (goog.isDefAndNotNull(selectedLayer) && goog.isDefAndNotNull(selectedLayer.get('exchangeMetadata')) &&
+                  goog.isDefAndNotNull(selectedLayer.get('exchangeMetadata').attributes)) {
+                scope.properties = _.sortBy(scope.properties, function(prop) {
+                  return _.find(selectedLayer.get('exchangeMetadata').attributes, { 'attribute': prop[0] }).display_order;
+                });
+              }
+
               if (geometry.type.toLowerCase() == 'point') {
                 if (projection === 'EPSG:4326') {
                   scope.coordDisplay = {value: coordinateDisplays.DMS};
@@ -73,6 +81,51 @@
                 });
               });
             });
+
+            scope.isAttributeVisible = function(property) {
+              var exchangeMetadataAttribute = getExchangeMetadataAttribute(property);
+
+              if (goog.isDefAndNotNull(exchangeMetadataAttribute) &&
+                  goog.isDefAndNotNull(exchangeMetadataAttribute.visible)) {
+                return exchangeMetadataAttribute.visible;
+              }
+
+              var schema = featureManagerService.getSelectedLayer().get('metadata').schema;
+
+              // if there is no schema, show the attribute. only filter out if there is schema and attr is set to hidden
+              if (!goog.isDefAndNotNull(schema) || !schema.hasOwnProperty(property)) {
+                return true;
+              }
+
+              return schema[property].visible;
+            };
+
+            scope.getAttributeLabel = function(property) {
+              var exchangeMetadataAttribute = getExchangeMetadataAttribute(property);
+
+              if (goog.isDefAndNotNull(exchangeMetadataAttribute) &&
+                  goog.isDefAndNotNull(exchangeMetadataAttribute.attribute_label) &&
+                  exchangeMetadataAttribute.attribute_label.length > 0) {
+                return exchangeMetadataAttribute.attribute_label;
+              }
+
+              return property;
+            };
+
+            function getExchangeMetadataAttribute(property) {
+              var exchangeMetadata = featureManagerService.getSelectedLayer().get('exchangeMetadata');
+
+              if (goog.isDefAndNotNull(exchangeMetadata) && goog.isDefAndNotNull(exchangeMetadata.attributes)) {
+                for (var index in exchangeMetadata.attributes) {
+                  if (goog.isDefAndNotNull(exchangeMetadata.attributes[index]) &&
+                      exchangeMetadata.attributes[index].attribute === property) {
+                    return exchangeMetadata.attributes[index];
+                  }
+                }
+              }
+
+              return null;
+            }
 
             scope.translate = function(value) {
               return $translate.instant(value);
