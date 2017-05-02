@@ -112,6 +112,16 @@
               return property;
             };
 
+            scope.isAttributeReadonly = function(property) {
+              var exchangeMetadataAttribute = getExchangeMetadataAttribute(property);
+
+              if (goog.isDefAndNotNull(exchangeMetadataAttribute)) {
+                return exchangeMetadataAttribute.readonly;
+              }
+
+              return false;
+            };
+
             function getExchangeMetadataAttribute(property) {
               var exchangeMetadata = featureManagerService.getSelectedLayer().get('exchangeMetadata');
 
@@ -194,7 +204,7 @@
 
             scope.validateField = function(property, key) {
               property.valid = true;
-              if (property[key] !== '' && property[key] !== null) {
+              if (property[key] !== '' && property[key] !== null && property[key] !== undefined) {
                 switch (property.type) {
                   case 'xsd:int':
                     property.valid = validateInteger(property[key]);
@@ -209,8 +219,11 @@
                     property.valid = validateDouble(property[key]);
                     break;
                 }
-              } else if (property.nillable === 'false') {
-                property.valid = false;
+              } else {
+                var exchangeMetadataAttribute = getExchangeMetadataAttribute(property[0]);
+                if (property.nillable === 'false' || (goog.isDefAndNotNull(exchangeMetadataAttribute) && exchangeMetadataAttribute.required)) {
+                  property.valid = false;
+                }
               }
             };
 
