@@ -1584,6 +1584,9 @@
 
       // the key to this working is to use the 'real window',
       //  it avoids issues with both angular and WebKit quirks.
+      if (hash_string.substring(0, 2) !== '#/') {
+        hash_string = '#/' + hash_string;
+      }
       real_window.location.hash = hash_string;
     };
 
@@ -1598,7 +1601,7 @@
     var cleanHashString = function(hash) {
       var new_hash = '' + hash;
       var first = new_hash.substring(0, 1);
-      if (new_hash.substring(0, 2) == '#/') {
+      if (new_hash.substring(0, 2) == '#/' || new_hash.substring(0, 2) == '/#') {
         new_hash = new_hash.substring(2);
       } else if (first == '/' || first == '#') {
         new_hash = new_hash.substring(1);
