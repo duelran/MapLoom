@@ -911,22 +911,34 @@
               };
               wfsReqConfig.headers = serverService_.getWfsRequestHeaders(server);
 
-              httpService_.post(wfsurl, wfsRequestData, wfsReqConfig)
+              return httpService_.post(wfsurl, wfsRequestData, wfsReqConfig)
               .success(_handlePostResponse);
 
             };
-            geogigService_.isGeoGig(layer, server, fullConfig).then(function() {
-              testReadOnly();
+            var geogigPromise = geogigService_.isGeoGig(layer, server, fullConfig).then(function() {
+              return testReadOnly();
             }, function() {
-              testReadOnly();
+              return testReadOnly();
             });
 
             var layerName = layer.getSource().getParams()['LAYERS'] || layer.getSource().getParams()['layers'];
 
             // Fetch the Exchange layer metadata
-            httpService_.get('/layers/' + layerName + '/get').success(function(response) {
+            var exchangePromise = httpService_.get('/layers/' + layerName + '/get').success(function(response) {
               response.attributes = _.sortBy(response.attributes, 'display_order');
               layer.set('exchangeMetadata', response);
+            });
+
+            q_.all([geogigPromise, exchangePromise]).then(function(data) {
+              _.each(layer.get('metadata').schema, function(schemaAttribute) {
+                var exchangeMetadata = layer.get('exchangeMetadata');
+                if (goog.isDefAndNotNull(exchangeMetadata) && goog.isDefAndNotNull(exchangeMetadata.attributes)) {
+                  var exchangeAttribute = _.find(exchangeMetadata.attributes, { attribute: schemaAttribute._name });
+                  if (goog.isDefAndNotNull(exchangeAttribute)) {
+                    schemaAttribute.visible = exchangeAttribute.visible;
+                  }
+                }
+              });
             });
           }
         } else if (server.ptype === 'gxp_tmssource') {

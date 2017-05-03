@@ -46,13 +46,6 @@
             };
 
             scope.isAttributeVisible = function(property) {
-              var exchangeMetadataAttribute = getExchangeMetadataAttribute(property);
-
-              if (goog.isDefAndNotNull(exchangeMetadataAttribute) &&
-                  goog.isDefAndNotNull(exchangeMetadataAttribute.visible)) {
-                return exchangeMetadataAttribute.visible;
-              }
-
               var schema = featureManagerService.getSelectedLayer().get('metadata').schema;
 
               // if there is no schema, show the attribute. only filter out if there is schema and attr is set to hidden
