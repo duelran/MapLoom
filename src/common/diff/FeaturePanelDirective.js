@@ -128,6 +128,44 @@
             scope.$on('hide-authors', function() {
               scope.authorsShown = false;
             });
+
+            scope.isAttributeVisible = function(property) {
+              var schema = featureDiffService.layer.get('metadata').schema;
+
+              // if there is no schema, show the attribute. only filter out if there is schema and attr is set to hidden
+              if (!goog.isDefAndNotNull(schema) || !schema.hasOwnProperty(property)) {
+                return true;
+              }
+
+              return schema[property].visible;
+            };
+
+            scope.getAttributeLabel = function(property) {
+              var exchangeMetadataAttribute = getExchangeMetadataAttribute(property);
+
+              if (goog.isDefAndNotNull(exchangeMetadataAttribute) &&
+                  goog.isDefAndNotNull(exchangeMetadataAttribute.attribute_label) &&
+                  exchangeMetadataAttribute.attribute_label.length > 0) {
+                return exchangeMetadataAttribute.attribute_label;
+              }
+
+              return property;
+            };
+
+            function getExchangeMetadataAttribute(property) {
+              var exchangeMetadata = featureDiffService.layer.get('exchangeMetadata');
+
+              if (goog.isDefAndNotNull(exchangeMetadata) && goog.isDefAndNotNull(exchangeMetadata.attributes)) {
+                for (var index in exchangeMetadata.attributes) {
+                  if (goog.isDefAndNotNull(exchangeMetadata.attributes[index]) &&
+                      exchangeMetadata.attributes[index].attribute === property) {
+                    return exchangeMetadata.attributes[index];
+                  }
+                }
+              }
+
+              return null;
+            }
           }
         };
       }

@@ -522,6 +522,14 @@
             rootScope_.$broadcast('feature-diff-performed');
           }
         }
+
+        if (goog.isDefAndNotNull(service_.layer.get('exchangeMetadata')) &&
+            goog.isDefAndNotNull(service_.layer.get('exchangeMetadata').attributes)) {
+          panel.attributes = _.sortBy(panel.attributes, function(attr) {
+            return _.find(service_.layer.get('exchangeMetadata').attributes, { 'attribute': attr.attributename }).display_order;
+          });
+        }
+
       }, function(reject) {
         diffsNeeded_ -= 1;
         diffsInError_ += 1;
