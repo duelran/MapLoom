@@ -419,6 +419,22 @@
             service_.attributeNameList.push({name: propName, filter: metadata.filters[propName]});
           }
         }
+        // Filter out hidden attributes
+        service_.attributeNameList = _.filter(service_.attributeNameList, function(prop) {
+          // if there is no schema, show the attribute. only filter out if there is schema and attr is set to hidden
+          if (!goog.isDefAndNotNull(metadata.schema) || !metadata.schema.hasOwnProperty(prop.name)) {
+            return true;
+          }
+
+          return metadata.schema[prop.name].visible;
+        });
+        // Use the Exchange metadata display_order if it exists
+        if (goog.isDefAndNotNull(service_.selectedLayer) && goog.isDefAndNotNull(service_.selectedLayer.get('exchangeMetadata')) &&
+            goog.isDefAndNotNull(service_.selectedLayer.get('exchangeMetadata').attributes)) {
+          service_.attributeNameList = _.sortBy(service_.attributeNameList, function(prop) {
+            return _.find(service_.selectedLayer.get('exchangeMetadata').attributes, { 'attribute': prop.name }).display_order;
+          });
+        }
         service_.totalFeatures = data.totalFeatures;
         service_.totalPages = Math.ceil(service_.totalFeatures / service_.resultsPerPage);
         getRestrictions();
