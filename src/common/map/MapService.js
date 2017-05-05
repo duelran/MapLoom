@@ -212,7 +212,7 @@
       this.save_method = 'POST';
 
       if (this.id) {
-        httpService_.get('/story?map_id=' + this.id).success(function(resp) {
+        httpService_.get('/storyPersist?map_id=' + this.id).success(function(resp) {
           service_.story.footer = resp.footer;
           service_.story.selectedFeature = resp['selected_feature'];
           service_.story.icon = resp.icon;
@@ -1121,8 +1121,8 @@
     };
 
     this.save = function(copy) {
-      //TODO: this should be handled in a directive
-      service_.story.footer = $('#footer').text().trim();
+      //TODO: DOn't do this if we aren't in story mode
+      service_.story.footer = $(window.parent.document.getElementById('footer')).text().trim();
 
       if (goog.isDefAndNotNull(copy) && copy) {
         // remove current map id so that it is saved as a new map.
@@ -1197,7 +1197,8 @@
         }
       }).success(function(data, status, headers, config) {
         service_.updateMap(data);
-        var file = $('#logo-upload')[0].files[0];
+        //TODO: Don't run any of this if we aren't in story mode
+        var file = $(window.parent.document.getElementById('logo-upload'))[0];
 
         function post() {
           var params = {
@@ -1209,7 +1210,7 @@
             params.icon = reader.result.slice(reader.result.indexOf(',') + 1);
           }
           httpService_({
-            url: '/story',
+            url: '/storyPersist',
             method: 'POST',
             data: $.param(params),
             headers: {
@@ -1219,9 +1220,9 @@
           });
         }
 
-        if (file) {
+        if (file && file.files.length) {
           var reader = new FileReader();
-          reader.readAsDataURL(file);
+          reader.readAsDataURL(file.files[0]);
           reader.onload = post;
         } else {
           post();
@@ -1262,6 +1263,7 @@
           params[kvp[0]] = [v];
         }
       }
+      console.log('parsed query string', params);
 
       return params;
     };
