@@ -1197,14 +1197,14 @@
         }
       }).success(function(data, status, headers, config) {
         service_.updateMap(data);
-        //TODO: Don't run any of this if we aren't in story mode
-        var file = $(window.parent.document.getElementById('logo-upload'))[0];
+
 
         function post() {
           var params = {
             'map_id': data.id,
             'footer': service_.story.footer,
-            'selected_feature': service_.story.selectedFeature
+            'selected_feature': service_.story.selectedFeature,
+            'template': getRealWindow().template
           };
           if (reader) {
             params.icon = reader.result.slice(reader.result.indexOf(',') + 1);
@@ -1219,15 +1219,17 @@
             }
           });
         }
-
-        if (file && file.files.length) {
-          var reader = new FileReader();
-          reader.readAsDataURL(file.files[0]);
-          reader.onload = post;
-        } else {
-          post();
+        //Don't run any of this if we aren't in story mode
+        if (getRealWindow().template) {
+          var file = $(window.parent.document.getElementById('logo-upload'))[0];
+          if (file && file.files.length) {
+            var reader = new FileReader();
+            reader.readAsDataURL(file.files[0]);
+            reader.onload = post;
+          } else {
+            post();
+          }
         }
-
       }).error(function(data, status, headers, config) {
         if (status == 403 || status == 401) {
           dialogService_.error(translate_.instant('save_failed'), translate_.instant('map_save_permission'));
