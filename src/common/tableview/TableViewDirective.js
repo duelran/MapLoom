@@ -557,6 +557,17 @@
               return !_.isNil(row.errors) && !_.isEmpty(row.errors[property]);
             };
 
+            scope.getAttributeValue = function(property, value) {
+              if (_.isArray(scope.restrictions[property].type)) {
+                var option = _.find(scope.restrictions[property].type, { _value: value });
+                if (option && option._label) {
+                  return option._label;
+                }
+              }
+
+              return value;
+            };
+
             function getExchangeMetadataAttribute(property) {
               var exchangeMetadata = tableViewService.selectedLayer.get('exchangeMetadata');
 

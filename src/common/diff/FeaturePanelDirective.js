@@ -114,10 +114,18 @@
                   break;
               }
 
-              if (featureDiffService.schema[property.attributename]._nillable === 'false' &&
-                  (property[key] === '' || property[key] === null)) {
+              if (scope.isAttributeRequired(property.attributename) &&
+                  (property[key] === '' || _is.Nil(property[key]))) {
                 property.valid = false;
               }
+            };
+
+            scope.isAttributeRequired = function(property) {
+              var exchangeMetadataAttribute = getExchangeMetadataAttribute(property);
+              var schema = featureDiffService.schema;
+
+              return (!_.isNil(schema) && schema.hasOwnProperty(property) && schema[property].nillable === 'false') ||
+                  (!_.isNil(exchangeMetadataAttribute) && exchangeMetadataAttribute.required);
             };
 
             scope.$on('feature-diff-performed', updateVariables);
@@ -155,9 +163,9 @@
             function getExchangeMetadataAttribute(property) {
               var exchangeMetadata = featureDiffService.layer.get('exchangeMetadata');
 
-              if (goog.isDefAndNotNull(exchangeMetadata) && goog.isDefAndNotNull(exchangeMetadata.attributes)) {
+              if (!_.isNil(exchangeMetadata) && !_.isNil(exchangeMetadata.attributes)) {
                 for (var index in exchangeMetadata.attributes) {
-                  if (goog.isDefAndNotNull(exchangeMetadata.attributes[index]) &&
+                  if (!_.isNil(exchangeMetadata.attributes[index]) &&
                       exchangeMetadata.attributes[index].attribute === property) {
                     return exchangeMetadata.attributes[index];
                   }

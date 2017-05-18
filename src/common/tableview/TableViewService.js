@@ -368,6 +368,14 @@
             return;
           }
           service_.readOnly = false;
+
+          function convertExchangeOptionToSchemaOption(option) {
+            return {
+              _value: option.value,
+              _label: option.label
+            };
+          }
+
           for (var attrIndex in service_.attributeNameList) {
             var attr = service_.attributeNameList[attrIndex];
             var attrRestriction = {type: '', nillable: true};
@@ -400,6 +408,15 @@
 
             attrRestriction.nillable = metadata.schema[attr.name]._nillable;
 
+            // Use the Exchange metadata options if it exists
+            if (!_.isNil(service_.selectedLayer) && !_.isNil(service_.selectedLayer.get('exchangeMetadata')) &&
+                !_.isNil(service_.selectedLayer.get('exchangeMetadata').attributes)) {
+              var exchangeAttribute = _.find(service_.selectedLayer.get('exchangeMetadata').attributes, { 'attribute': attr.name });
+              if (!_.isNil(exchangeAttribute) && _.isArray(exchangeAttribute.options) && !_.isEmpty(exchangeAttribute.options)) {
+                attrRestriction.type = _.map(exchangeAttribute.options, convertExchangeOptionToSchemaOption);
+              }
+            }
+
             service_.restrictionList[attr.name] = attrRestriction;
           }
         };
@@ -429,8 +446,8 @@
           return metadata.schema[prop.name].visible;
         });
         // Use the Exchange metadata display_order if it exists
-        if (goog.isDefAndNotNull(service_.selectedLayer) && goog.isDefAndNotNull(service_.selectedLayer.get('exchangeMetadata')) &&
-            goog.isDefAndNotNull(service_.selectedLayer.get('exchangeMetadata').attributes)) {
+        if (!_.isNil(service_.selectedLayer) && !_.isNil(service_.selectedLayer.get('exchangeMetadata')) &&
+            !_.isNil(service_.selectedLayer.get('exchangeMetadata').attributes)) {
           service_.attributeNameList = _.sortBy(service_.attributeNameList, function(prop) {
             return _.find(service_.selectedLayer.get('exchangeMetadata').attributes, { 'attribute': prop.name }).display_order;
           });

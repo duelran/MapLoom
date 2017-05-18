@@ -51,6 +51,23 @@
                 scope.properties = _.sortBy(scope.properties, function(prop) {
                   return _.find(selectedLayer.get('exchangeMetadata').attributes, { 'attribute': prop[0] }).display_order;
                 });
+                _.chain(selectedLayer.get('exchangeMetadata').attributes)
+                    .filter(function(attribute) {
+                      return _.isArray(attribute.options) && !_.isEmpty(attribute.options);
+                    })
+                    .each(function(attribute) {
+                      var property = _.find(scope.properties, { 0: attribute.attribute });
+                      if (property) {
+                        property.type = 'simpleType';
+                        property.enum = _.map(attribute.options, function(option) {
+                          return {
+                            _value: option.value,
+                            _label: option.value + ' - ' + option.label
+                          };
+                        });
+                      }
+                    })
+                    .commit();
               }
 
               if (geometry.type.toLowerCase() == 'point') {
@@ -113,6 +130,14 @@
               }
 
               return false;
+            };
+
+            scope.isAttributeRequired = function(property) {
+              var exchangeMetadataAttribute = getExchangeMetadataAttribute(property);
+              var schema = featureManagerService.getSelectedLayer().get('metadata').schema;
+
+              return (!_.isNil(schema) && schema.hasOwnProperty(property) && schema[property].nillable === 'false') ||
+                  (!_.isNil(exchangeMetadataAttribute) && exchangeMetadataAttribute.required);
             };
 
             function getExchangeMetadataAttribute(property) {
@@ -213,10 +238,7 @@
                     break;
                 }
               } else {
-                var exchangeMetadataAttribute = getExchangeMetadataAttribute(property[0]);
-                if (property.nillable === 'false' || (goog.isDefAndNotNull(exchangeMetadataAttribute) && exchangeMetadataAttribute.required)) {
-                  property.valid = false;
-                }
+                property.valid = !scope.isAttributeRequired(property[0]);
               }
             };
 

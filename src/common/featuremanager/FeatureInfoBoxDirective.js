@@ -83,6 +83,20 @@
               return null;
             }
 
+            scope.getAttributeValue = function(property, value) {
+              var exchangeMetadataAttribute = getExchangeMetadataAttribute(property);
+
+              if (!_.isNil(exchangeMetadataAttribute) &&
+                  !_.isNil(exchangeMetadataAttribute.options) &&
+                  !_.isEmpty(exchangeMetadataAttribute.options)) {
+                var option = _.find(exchangeMetadataAttribute.options, { value: value });
+                if (option && option.label) {
+                  return option.value + ' - ' + option.label;
+                }
+              }
+
+              return value;
+            };
 
             scope.showFeatureHistory = function() {
               if (!scope.loadingHistory) {
