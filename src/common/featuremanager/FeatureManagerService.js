@@ -317,8 +317,6 @@
         // -- select the geometry if it is a feature, clear otherwise
         // -- store the selected layer of the feature
         if (classifyItem(selectedItem_) === 'feature') {
-
-          mapService_.story.selectedFeature = selectedItem_.id;
           parent.$('body').triggerHandler('featureSelected', [selectedItem_.id]);
           selectedLayer_ = this.getSelectedItemLayer().layer;
           // note that another service may make a fake feature selection on a layer not in mapservice.

@@ -201,25 +201,8 @@
       //this.configuration = configService_.configuration;
       this.title = configService_.configuration.about.title;
       this.abstract = configService_.configuration.about.abstract;
-      var storyReady = $q.defer();
-      this.story = {
-        footer: undefined,
-        selectedFeature: undefined,
-        icon: undefined,
-        ready: storyReady.promise
-      };
       this.id = configService_.configuration.id;
       this.save_method = 'POST';
-
-      if (this.id) {
-        httpService_.get('/storyPersist?map_id=' + this.id).success(function(resp) {
-          service_.story.footer = resp.footer;
-          service_.story.selectedFeature = resp['selected_feature'];
-          service_.story.icon = resp.icon;
-          storyReady.resolve(true);
-          return resp;
-        });
-      }
 
       if (goog.isDefAndNotNull(this.id) && this.id) {
         this.save_url = '/maps/' + this.id + '/data';
@@ -1121,9 +1104,6 @@
     };
 
     this.save = function(copy) {
-      //TODO: DOn't do this if we aren't in story mode
-      service_.story.footer = $(window.parent.document.getElementById('footer')).text().trim();
-
       if (goog.isDefAndNotNull(copy) && copy) {
         // remove current map id so that it is saved as a new map.
         service_.id = null;
@@ -1188,6 +1168,7 @@
         cfg.map.layers.push(config);
       });
 
+
       httpService_({
         url: service_.getSaveURL(),
         method: service_.getSaveHTTPMethod(),
@@ -1197,39 +1178,7 @@
         }
       }).success(function(data, status, headers, config) {
         service_.updateMap(data);
-
-
-        function post() {
-          var params = {
-            'map_id': data.id,
-            'footer': service_.story.footer,
-            'selected_feature': service_.story.selectedFeature,
-            'template': getRealWindow().template
-          };
-          if (reader) {
-            params.icon = reader.result.slice(reader.result.indexOf(',') + 1);
-          }
-          httpService_({
-            url: '/storyPersist',
-            method: 'POST',
-            data: $.param(params),
-            headers: {
-              'X-CSRFToken': configService_.csrfToken,
-              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
-            }
-          });
-        }
-        //Don't run any of this if we aren't in story mode
-        if (getRealWindow().template) {
-          var file = $(window.parent.document.getElementById('logo-upload'))[0];
-          if (file && file.files.length) {
-            var reader = new FileReader();
-            reader.readAsDataURL(file.files[0]);
-            reader.onload = post;
-          } else {
-            post();
-          }
-        }
+        parent.$('body').triggerHandler('saveMap', [data.id]);
       }).error(function(data, status, headers, config) {
         if (status == 403 || status == 401) {
           dialogService_.error(translate_.instant('save_failed'), translate_.instant('map_save_permission'));
