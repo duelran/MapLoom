@@ -459,7 +459,6 @@
                   }
                   // ensure that maps and documents are excluded from the search results.
                   if (index_name == 'registry' || layer.detail_url.indexOf('layer') == 1) {
-                  //if (index_name == 'registry' || layer.type_exact == 'layer') {
                     layers_by_index[index_name].push(layer);
                   }
                 }
