@@ -28,7 +28,6 @@
     'loom_search',
     'loom_test',
     'loom_timeline',
-    'loom_story',
     'loom_measure'
   ]);
 }());
