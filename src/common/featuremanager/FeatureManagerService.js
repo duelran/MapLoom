@@ -317,8 +317,9 @@
         // -- select the geometry if it is a feature, clear otherwise
         // -- store the selected layer of the feature
         if (classifyItem(selectedItem_) === 'feature') {
-          parent.$('body').triggerHandler('featureSelected', [selectedItem_.id]);
           selectedLayer_ = this.getSelectedItemLayer().layer;
+          var layerID = selectedLayer_.get('source').getParams().LAYERS;
+          parent.$('body').triggerHandler('featureSelected', [selectedItem_.id, layerID]);
           // note that another service may make a fake feature selection on a layer not in mapservice.
           // checking to make sure it had a geometry before making assumptions about edit layer etc
           if (goog.isDefAndNotNull(selectedItem_.geometry)) {
