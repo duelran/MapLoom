@@ -1043,9 +1043,9 @@
       goog.object.extend(params, hash_view);
 
       if (configService_.configuration.map.projection === 'EPSG:4326') {
-        params['extent'] = [39.3682, -75.9374, 42.0329, -71.7187];
+        params['extent'] = [40.4888, -74.2759, 40.9279, -73.6896];
       } else {
-        params['extent'] = [-8453323, 4774561, -7983695, 5165920];
+        params['extent'] = [-8268357, 4937238, -8203099, 5001716];
       }
       return params;
     };
@@ -1530,22 +1530,11 @@
         coordinateFormat: coordDisplay
       });
 
-      // NYC layers
-      var nycOrthoLabels = new ol.layer.Tile({
-        extent: [-8268000, 4870900, -8005000, 5055500],
-        source: new ol.source.XYZ({
-          url: 'https://maps{1-4}.nyc.gov/tms/1.0.0/carto/label/{z}/{x}/{-y}.png8'
-        }),
-        projection: 'EPSG:900913',
-        metadata: {
-          layerOrder: 0,
-          title: '2016 NYC Orthophoto Labels'
-        }
-      });
+      // NYC layer
       var nycOrtho = new ol.layer.Tile({
-        extent: [-8453323, 4774561, -7983695, 5165920],
+        extent: [-8268357, 4937238, -8203099, 5001716],
         source: new ol.source.XYZ({
-          url: 'https://maps{1-4}.nyc.gov/tms/1.0.0/carto/basemap/{z}/{x}/{-y}.jpg'
+          url: 'https://maps{1-4}.nyc.gov/tms/1.0.0/photo/2016/{z}/{x}/{-y}.png8'
         }),
         projection: 'EPSG:900913',
         metadata: {
@@ -1577,7 +1566,7 @@
         ol3Logo: false,
         target: 'map',
         view: new ol.View(service_.getMapViewParams()),
-        layers: [nycOrtho, nycOrthoLabels]
+        layers: [nycOrtho]
       });
 
       map.on('dragend', function() {
