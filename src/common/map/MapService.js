@@ -1028,7 +1028,8 @@
     this.getMapViewParams = function() {
       var params = {
         projection: configService_.configuration.map.projection,
-        maxZoom: 17
+        minZoom: 8,
+        maxZoom: 19
       };
 
       var default_view = {
@@ -1042,9 +1043,9 @@
       goog.object.extend(params, hash_view);
 
       if (configService_.configuration.map.projection === 'EPSG:4326') {
-        params['minZoom'] = 3;
+        params['extent'] = [39.3682, -75.9374, 42.0329, -71.7187];
       } else {
-        params['maxResolution'] = 40075016.68557849 / 2048;
+        params['extent'] = [-8453323, 4774561, -7983695, 5165920];
       }
       return params;
     };
@@ -1528,6 +1529,31 @@
         projection: 'EPSG:4326',
         coordinateFormat: coordDisplay
       });
+
+      // NYC layers
+      var nycOrthoLabels = new ol.layer.Tile({
+        extent: [-8268000, 4870900, -8005000, 5055500],
+        source: new ol.source.XYZ({
+          url: 'https://maps{1-4}.nyc.gov/tms/1.0.0/carto/label/{z}/{x}/{-y}.png8'
+        }),
+        projection: 'EPSG:900913',
+        metadata: {
+          layerOrder: 0,
+          title: '2016 NYC Orthophoto Labels'
+        }
+      });
+      var nycOrtho = new ol.layer.Tile({
+        extent: [-8453323, 4774561, -7983695, 5165920],
+        source: new ol.source.XYZ({
+          url: 'https://maps{1-4}.nyc.gov/tms/1.0.0/carto/basemap/{z}/{x}/{-y}.jpg'
+        }),
+        projection: 'EPSG:900913',
+        metadata: {
+          layerOrder: 0,
+          title: '2016 NYC Orthophoto'
+        }
+      });
+
       var map = new ol.Map({
         //layers: do not add any layers to the map as they will be added once server is created and getcapabilities
         //        equivalent functions respond if relevant.
@@ -1550,7 +1576,8 @@
         //renderer: ol.RendererHint.CANVAS,
         ol3Logo: false,
         target: 'map',
-        view: new ol.View(service_.getMapViewParams())
+        view: new ol.View(service_.getMapViewParams()),
+        layers: [nycOrtho, nycOrthoLabels]
       });
 
       map.on('dragend', function() {
