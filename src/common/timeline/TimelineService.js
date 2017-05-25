@@ -64,7 +64,12 @@
         }
       }
 
-      if (layersWithTime > 0) {
+      $(window.document.body).bind('set-time-slider', function(evt, enabled) {
+        rootScope_.timelineServiceEnabled = enabled;
+        mapService_.showTimeline(enabled);
+      });
+
+      if ((layersWithTime > 0 && window.parent.window.template === undefined) || window.parent.window.template === 'time-slider') {
         rootScope_.timelineServiceEnabled = true;
         mapService_.showTimeline(true);
       } else {
