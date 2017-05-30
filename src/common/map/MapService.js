@@ -1531,6 +1531,17 @@
       });
 
       // NYC layer
+      var nycBasemap = new ol.layer.Tile({
+        extent: [-8453323, 4774561, -7983695, 5165920],
+        source: new ol.source.XYZ({
+          url: 'https://maps{1-4}.nyc.gov/tms/1.0.0/carto/basemap/{z}/{x}/{-y}.jpg'
+        }),
+        projection: 'EPSG:900913',
+        metadata: {
+          layerOrder: 0,
+          title: 'NYC Basemap'
+        }
+      });
       var nycOrtho = new ol.layer.Tile({
         extent: [-8268357, 4937238, -8203099, 5001716],
         source: new ol.source.XYZ({
@@ -1566,7 +1577,7 @@
         ol3Logo: false,
         target: 'map',
         view: new ol.View(service_.getMapViewParams()),
-        layers: [nycOrtho]
+        layers: [nycBasemap, nycOrtho]
       });
 
       map.on('dragend', function() {
