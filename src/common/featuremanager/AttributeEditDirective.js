@@ -172,6 +172,16 @@
               }
             };
 
+            scope.mediaTextShow = {};
+
+            scope.addMedia = function(property, url) {
+              if (url) {
+                property[1].push(url);
+              }
+              scope.mediaTextShow[property[0]] = false;
+            };
+
+
             scope.fileInputChanged = function(event) {
               var files = event.target.files;
               var propName = event.target.attributes['media-prop-name'].value;
