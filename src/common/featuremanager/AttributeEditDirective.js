@@ -176,6 +176,9 @@
 
             scope.addMedia = function(property, url) {
               if (url) {
+                if (property[1] === null) {
+                  property[1] = [];
+                }
                 property[1].push(url);
               }
               scope.mediaTextShow[property[0]] = false;
