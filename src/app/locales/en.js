@@ -377,7 +377,10 @@
     'username' : 'Username',
     'add_comment' : 'Add Comment',
     'comments_enabled' : 'Comments Enabled',
-    'bounding_box' : 'Bounding Box'
+    'bounding_box' : 'Bounding Box',
+    'pin_feature' : 'Pin Feature',
+    'unpin_feature' : 'Unpin Feature',
+    'pinned_search' : 'Pinned Search'
   };
 
   var module = angular.module('loom_translations_en', ['pascalprecht.translate']);

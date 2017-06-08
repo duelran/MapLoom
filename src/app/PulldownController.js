@@ -24,7 +24,7 @@
           $scope.serversLoading = pulldownService.serversLoading;
           $scope.pulldownService = pulldownService;
           $scope.registryEnabled = configService.configuration.registryEnabled;
-          $scope.nominatimSearchEnabled = configService.configuration.nominatimSearchEnabled;
+          $scope.searchEnabled = configService.configuration.searchEnabled;
           $scope.unifiedLayerDialog = configService.configuration.unifiedLayerDialog;
         }
 
