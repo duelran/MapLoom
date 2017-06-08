@@ -760,7 +760,7 @@
             var tileSize = 512;
             serviceSource = new ol.source.XYZ({
               attributions: [attribution],
-              maxZoom: 16,
+              maxZoom: 19,
               projection: projection,
               tileSize: tileSize,
               metadata: metadata,
@@ -1035,7 +1035,7 @@
     this.getMapViewParams = function() {
       var params = {
         projection: configService_.configuration.map.projection,
-        maxZoom: 17
+        maxZoom: 19
       };
 
       var default_view = {

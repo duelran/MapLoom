@@ -120,7 +120,8 @@
         nominatimSearchEnabled: false,
         geoquerySearchEnabled: false,
         serverLocation: serverLocation,
-        searchApiURL: serverLocation + '/registry/api/catalogs/'
+        searchApiURL: serverLocation + '/registry/api/catalogs/',
+        admin: true
       };
 
       if (goog.isDefAndNotNull($window.config)) {
@@ -134,6 +135,7 @@
       this.user_name = this.configuration.username;
       this.proxy = this.configuration.proxy;
       this.csrfToken = $cookies.csrftoken;
+      this.admin = this.configuration.admin;
 
       if (goog.isDefAndNotNull(this.configuration.map.zoom) && this.configuration.map.zoom === 0) {
         this.configuration.map.zoom = 0;
