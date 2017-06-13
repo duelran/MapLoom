@@ -431,7 +431,7 @@
              *  the registry configuration and the geoserver
              *  configuration as appropriate.
              */
-            scope.handleSearchResults = function(response) {
+            scope.handleSearchResults = function(results) {
               // check to ensure the data.objects exists
               var layers_by_index = {
                 'exchange': [],
@@ -441,7 +441,7 @@
               // change the scope to finished, even if partially finished.
               scope.searchState = 'finished';
 
-              if (response.data && response.data.objects) {
+              if (results.data && results.data.objects) {
                 // reset the current layers list for both servers.
                 servers.geoserver.layersConfig = [];
                 servers.registry.layersConfig = [];
@@ -450,7 +450,7 @@
                 //  registry layers are really from the registry index,
                 //  exchange layers are really from the local geoserver/geonode
                 //    instance.
-                var layers = response.data.objects;
+                var layers = results.data.objects;
                 for (var i = 0, ii = layers.length; i < ii; i++) {
                   var layer = layers[i];
                   var index_name = 'exchange';
@@ -458,7 +458,7 @@
                     index_name = 'registry';
                   }
                   // ensure that maps and documents are excluded from the search results.
-                  if (index_name == 'registry' || layer.type_exact == 'layer') {
+                  if (index_name == 'registry' || layer.detail_url.indexOf('layer') == 1) {
                     layers_by_index[index_name].push(layer);
                   }
                 }
@@ -533,7 +533,7 @@
 
               // execute the search.
               $http({
-                url: '/api/base/search/',
+                url: '/api/base/',
                 method: 'GET',
                 params: params
               }).then(scope.handleSearchResults);
